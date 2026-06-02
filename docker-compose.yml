@@ -1,0 +1,41 @@
+services:
+
+  postgres:
+    image: postgres:16
+    container_name: retail_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: storeadmin
+      POSTGRES_PASSWORD: storepassword
+      POSTGRES_DB: store_intelligence
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    mem_limit: 512m
+
+  redis:
+    image: redis:7
+    container_name: retail_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    mem_limit: 256m
+
+  api_service:
+    build:
+      context: .
+      dockerfile: infra/docker/api.Dockerfile
+    container_name: retail_api
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+    mem_limit: 512m
+
+volumes:
+  postgres_data:
